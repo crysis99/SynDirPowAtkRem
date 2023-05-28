@@ -1,0 +1,18 @@
+{
+  "Nickname": "",
+  "Visibility": "Visible",
+  "OneLineDescription": "Removes directional power attack conditions, replaced with DTry keytraces.",
+  "LongDescription": "Removes PowerAttackTypeSide, PowerAttackTypeForward, PowerAttackTypeBack conditions from perks and replaces them with the corresponding keys from Dtry Keyutil's keytraces.",
+  "PreferredAutoVersioning": "Default",
+  "RequiredMods": [
+    "Keytrace.esp"
+  ],
+  "TargetedReleases": [
+    "SkyrimLE",
+    "SkyrimSE",
+    "SkyrimVR",
+    "EnderalLE",
+    "EnderalSE",
+    "SkyrimSEGog"
+  ]
+}
