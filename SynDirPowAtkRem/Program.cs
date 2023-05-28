@@ -37,7 +37,12 @@ namespace SynDirPowAtkRem
             {
                 throw new ArgumentException();
             }
-            
+            itemLink = new FormLink<IKeywordGetter>(FormKey.Factory("0914E5:Skyrim.esm"));
+            if (!itemLink.TryResolve<IKeywordGetter>(state.LinkCache, out var paTypeStanding))
+            {
+                throw new ArgumentException();
+            }
+
             //Forward
             ConditionFloat conForward = new ConditionFloat();
             HasMagicEffectConditionData conDataForward = new HasMagicEffectConditionData();
@@ -86,6 +91,17 @@ namespace SynDirPowAtkRem
             conDataForward.SecondUnusedIntParameter = 0;
             conDataRight.MagicEffect.Link.SetTo(mgefRightLink);
             conRight.Data = conDataRight;
+
+            ConditionFloat conNotLeft = conLeft;
+            conNotLeft.CompareOperator = CompareOperator.NotEqualTo;
+            ConditionFloat conNotRight = conRight;
+            conNotRight.CompareOperator = CompareOperator.NotEqualTo;
+            conNotRight.Flags = Condition.Flag.OR;
+            ConditionFloat conNotFront = conForward;
+            conNotFront.CompareOperator = CompareOperator.NotEqualTo;
+            conRight.Flags = Condition.Flag.OR;
+            ConditionFloat conNotBack = conBackward;
+            conNotBack.CompareOperator = CompareOperator.NotEqualTo;
             
             foreach (IPerkGetter perk in state.LoadOrder.PriorityOrder.OnlyEnabled().Perk().WinningOverrides())
             {
@@ -107,21 +123,30 @@ namespace SynDirPowAtkRem
                                         if(perk.Effects[i].Conditions[j].Conditions[k].Data.ToString()=="Mutagen.Bethesda.Skyrim.IsAttackTypeConditionData")
                                         {
                                             IsAttackTypeConditionData currCon = (IsAttackTypeConditionData) perk.Effects[i].Conditions[j].Conditions[k].Data;
-                                            if(currCon.Keyword.Link.Resolve<IKeywordGetter>(state.LinkCache).EditorID==paTypeForward.EditorID) 
+                                            string compStr = currCon.Keyword.Link.Resolve<IKeywordGetter>(state.LinkCache).EditorID ?? "";
+                                            if(compStr==paTypeForward.EditorID) 
                                             {
                                                 var perkOverride = state.PatchMod.Perks.GetOrAddAsOverride(perk);
                                                 perkOverride.Effects[i].Conditions[j].Conditions[k] = conForward;
                                             }
-                                            if(currCon.Keyword.Link.Resolve<IKeywordGetter>(state.LinkCache).EditorID==paTypeBack.EditorID) 
+                                            else if(compStr==paTypeBack.EditorID) 
                                             {
                                                 var perkOverride = state.PatchMod.Perks.GetOrAddAsOverride(perk);
                                                 perkOverride.Effects[i].Conditions[j].Conditions[k] = conBackward;
                                             }
-                                            if(currCon.Keyword.Link.Resolve<IKeywordGetter>(state.LinkCache).EditorID==paTypeSide.EditorID) 
+                                            else if(compStr==paTypeSide.EditorID) 
                                             {
                                                 var perkOverride = state.PatchMod.Perks.GetOrAddAsOverride(perk);
                                                 perkOverride.Effects[i].Conditions[j].Conditions[k] = conLeft;
                                                 perkOverride.Effects[i].Conditions[j].Conditions.Insert(k+1,conRight);
+                                            }
+                                            else if(compStr==paTypeStanding.EditorID)
+                                            {
+                                                var perkOverride = state.PatchMod.Perks.GetOrAddAsOverride(perk);
+                                                perkOverride.Effects[i].Conditions[j].Conditions[k] = conNotLeft;
+                                                perkOverride.Effects[i].Conditions[j].Conditions.Insert(k+1,conNotRight);
+                                                perkOverride.Effects[i].Conditions[j].Conditions.Insert(k+2,conNotFront);
+                                                perkOverride.Effects[i].Conditions[j].Conditions.Insert(k+3,conNotBack);
                                             }
                                         }
                                 
